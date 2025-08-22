@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <title>Bulk Image Captioner for LoRA Training</title>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+      <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+          .error { color: red; }
+          .form-group { margin-bottom: 15px; }
+          label { display: block; margin-bottom: 5px; }
+          input[type="text"], input[type="password"] { width: 100%; padding: 8px; }
+          input[type="file"] { margin-top: 10px; }
+          input[type="submit"] { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+          input[type="submit"]:hover { background: #0056b3; }
+          .footer {
+              text-align: center;
+              margin-top: 20px;
+              font-size: 0.9em;
+              color: #555;
+          }
+          .footer a {
+              color: #333;
+              text-decoration: none;
+              font-weight: bold;
+              margin-left: 5px;
+          }
+          .footer a:hover {
+              color: #007bff;
+          }
+          .footer .github-icon {
+              color: #000; /* Black GitHub icon */
+              margin-left: 5px;
+          }
+      </style>
+  </head>
+  <body>
+      <h1>Bulk Image Captioner for LoRA Training</h1>
+      {% if error %}
+          <p class="error">{{ error }}</p>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data">
+          <div class="form-group">
+              <label for="api_key">Gemini API Key</label>
+              <input type="password" id="api_key" name="api_key" required placeholder="Enter your Gemini API key">
+          </div>
+          <div class="form-group">
+              <label for="trigger_word">Trigger Word (optional, e.g., 'skw style')</label>
+              <input type="text" id="trigger_word" name="trigger_word" placeholder="Enter trigger word for LoRA">
+          </div>
+          <div class="form-group">
+              <label for="images">Upload Images</label>
+              <input type="file" id="images" name="images" multiple accept=".png,.jpg,.jpeg" required>
+          </div>
+          <input type="submit" value="Generate Captions">
+      </form>
+      <div class="footer">
+          Made with ❤️ By <a href="https://github.com/CryptoAce85" target="_blank">CryptoAce85</a> <i class="fab fa-github github-icon"></i>
+      </div>
+  </body>
+  </html>
