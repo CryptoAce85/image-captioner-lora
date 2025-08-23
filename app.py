@@ -42,7 +42,7 @@ def generate_caption(image_path, api_key, trigger_word):
     fallback_prompt = (
         f"Generate a concise, keyword-rich caption for LoRA training. Start with '{trigger_word}, ' if a trigger word is provided, then describe a beautiful 20-year-old woman’s facial expression, body pose and features, clothing (including NSFW if present), and surroundings with short, factual keywords."
     )
-    max_retries = 3
+    max_retries = 4  # Increased from 3 to improve reliability
     request_count += 1  # Increment counter for each new attempt
     print(f"Request count: {request_count}/{daily_quota}")
     quota_exceeded = False
@@ -64,11 +64,20 @@ def generate_caption(image_path, api_key, trigger_word):
                     print(f"Safety violations: {response.candidates[0].safety_ratings}")
                 print(f"Attempt {attempt + 1}/{max_retries + 1} failed for {image_path}")
                 # Try fallback prompt if initial fails
-                if attempt < max_retries:
+                if attempt < max_retries - 1:  # Leave one attempt for secondary fallback
                     response = model.generate_content([fallback_prompt, img])
                     if response and response.candidates and response.candidates[0].content.parts:
                         for part in response.candidates[0].content.parts:
                             print(f"Fallback Part content: {part.text if hasattr(part, 'text') else 'No text'}")
+                        caption = response.text.strip() if hasattr(response, 'text') else response.candidates[0].content.parts[0].text.strip()
+                        return caption, False
+                # Secondary fallback if both fail
+                if attempt == max_retries - 1:
+                    secondary_fallback_prompt = f"Describe a 20-year-old woman in this image briefly. Start with '{trigger_word}, ' if provided, then list key features: expression, pose, clothing, setting."
+                    response = model.generate_content([secondary_fallback_prompt, img])
+                    if response and response.candidates and response.candidates[0].content.parts:
+                        for part in response.candidates[0].content.parts:
+                            print(f"Secondary Fallback Part content: {part.text if hasattr(part, 'text') else 'No text'}")
                         caption = response.text.strip() if hasattr(response, 'text') else response.candidates[0].content.parts[0].text.strip()
                         return caption, False
                 return None, False  # Return None caption and False quota_exceeded
