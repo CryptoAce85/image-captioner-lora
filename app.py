@@ -36,19 +36,25 @@ def generate_caption(image_path, api_key, trigger_word):
         return None, False  # Return None caption and False quota_exceeded
     prompt = (
         "Generate a concise, keyword-rich caption for LoRA training of a beautiful 20-year-old woman. "
-        "Describe her facial expression, body pose and features, clothing (including NSFW if present), and surroundings. "
+        "Always include '20-year-old' in the description of the woman, then describe her facial expression, body pose and features, clothing (including NSFW if present), and surroundings. "
         "Keep the focus on her, with surroundings secondary. Use short, factual keywords, no tags or brackets."
     )
     fallback_prompt = (
         f"Generate a concise, keyword-rich caption for LoRA training. Start with '{trigger_word}, ' if a trigger word is provided, then describe a beautiful 20-year-old woman’s facial expression, body pose and features, clothing (including NSFW if present), and surroundings with short, factual keywords."
     )
-    max_retries = 4  # Increased from 3 to improve reliability
+    max_retries = 4  # Increased to improve reliability
     request_count += 1  # Increment counter for each new attempt
     print(f"Request count: {request_count}/{daily_quota}")
+    # Manual reset check after 2:00 AM CEST
+    current_time = datetime.datetime.now(pytz.timezone('Europe/Paris'))
+    if current_time.hour < 2 and request_count > 50:
+        request_count = 1  # Reset counter if past quota but before 2:00 AM next day
     quota_exceeded = False
     for attempt in range(max_retries + 1):
         try:
-            time.sleep(60)  # Wait 60 seconds to respect daily quota and retry delay
+            time.sleep(60)  # Wait 60 seconds, increased to 90 if near reset
+            if current_time.hour >= 2 and request_count > 50:
+                time.sleep(90)  # Extra delay post-reset to ensure quota refresh
             response = model.generate_content([prompt, img])
             print(f"Full response object: {response}")
             print(f"Response candidates: {response.candidates}")
