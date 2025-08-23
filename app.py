@@ -35,11 +35,12 @@ def generate_caption(image_path, api_key, trigger_word):
         print(f"Warning: Failed to process image {image_path}: {str(e)}")
         return None, False  # Return None caption and False quota_exceeded
     prompt = (
-prompt = (
-    "Generate a concise, keyword-rich caption for this image for LoRA training, assuming the subject is a beautiful 20-year-old woman. "
-    "Start with the trigger word provided, if any, followed by a description of her facial expression, body pose and features, and clothing details (including any NSFW elements if present). "
-    "Include surroundings and setting as secondary details, keeping the focus on the woman. "
-    "Use factual language, keep the text short, and avoid structural tags or brackets."
+        "Generate a concise, keyword-rich caption for LoRA training of a beautiful 20-year-old woman. "
+        "Describe her facial expression, body pose and features, clothing (including NSFW if present), and surroundings. "
+        "Keep the focus on her, with surroundings secondary. Use short, factual keywords, no tags or brackets."
+    )
+    fallback_prompt = (
+        f"Generate a concise, keyword-rich caption for LoRA training. Start with '{trigger_word}, ' if a trigger word is provided, then describe a beautiful 20-year-old woman’s facial expression, body pose and features, clothing (including NSFW if present), and surroundings with short, factual keywords."
     )
     max_retries = 3
     request_count += 1  # Increment counter for each new attempt
@@ -62,10 +63,21 @@ prompt = (
                 if response.candidates[0].safety_ratings:
                     print(f"Safety violations: {response.candidates[0].safety_ratings}")
                 print(f"Attempt {attempt + 1}/{max_retries + 1} failed for {image_path}")
+                # Try fallback prompt if initial fails
+                if attempt < max_retries:
+                    response = model.generate_content([fallback_prompt, img])
+                    if response and response.candidates and response.candidates[0].content.parts:
+                        for part in response.candidates[0].content.parts:
+                            print(f"Fallback Part content: {part.text if hasattr(part, 'text') else 'No text'}")
+                        caption = response.text.strip() if hasattr(response, 'text') else response.candidates[0].content.parts[0].text.strip()
+                        return caption, False
                 return None, False  # Return None caption and False quota_exceeded
             for part in response.candidates[0].content.parts:
                 print(f"Part content: {part.text if hasattr(part, 'text') else 'No text'}")
             caption = response.text.strip() if hasattr(response, 'text') else response.candidates[0].content.parts[0].text.strip()
+            # Force prepend trigger word
+            if trigger_word:
+                caption = f"{trigger_word.strip()}, {caption}"
             return caption, False  # Return caption and False quota_exceeded on success
         except exceptions.TooManyRequests as e:
             print(f"Error: Quota exceeded for {image_path} (Attempt {attempt + 1}/{max_retries + 1}): {str(e)}")
