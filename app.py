@@ -1,15 +1,14 @@
 from flask import Flask, request, render_template, send_file
-    import os
-    import google.generativeai as genai
-    from PIL import Image
-    import zipfile
-    import io
-
-    app = Flask(__name__)
-    UPLOAD_FOLDER = "uploads"
-    OUTPUT_FOLDER = "captions"
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+import os
+import google.generativeai as genai
+from PIL import Image
+import zipfile
+import io
+app = Flask(__name__)
+UPLOAD_FOLDER = "uploads"
+OUTPUT_FOLDER = "captions"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
     def generate_caption(image_path, api_key, trigger_word):
         """Generate a caption for a single image using Gemini with a trigger word."""
