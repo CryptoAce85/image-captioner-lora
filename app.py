@@ -10,7 +10,7 @@ OUTPUT_FOLDER = "captions"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-    def generate_caption(image_path, api_key, trigger_word):
+def generate_caption(image_path, api_key, trigger_word):
         """Generate a caption for a single image using Gemini with a trigger word."""
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-2.5-pro")
@@ -22,8 +22,8 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
             caption = f"{trigger_word.strip()}, {caption}"
         return caption
 
-    @app.route("/", methods=["GET", "POST"])
-    def index():
+@app.route("/", methods=["GET", "POST"])
+def index():
         if request.method == "POST":
             files = request.files.getlist("images")
             api_key = request.form.get("api_key")
@@ -58,5 +58,5 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
         
         return render_template("index.html", error=None)
 
-    if __name__ == "__main__":
+if __name__ == "__main__":
         app.run(debug=True)
