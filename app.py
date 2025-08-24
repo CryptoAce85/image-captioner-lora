@@ -5,15 +5,16 @@ from PIL import Image
 import zipfile
 import io
 import base64
+import time
+from google.api_core import exceptions
+import pytz
+from datetime import datetime
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "captions"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-
-import time
-from google.api_core import exceptions
 
 # Global variable to track requests (approximate, as retries may affect accuracy)
 request_count = 0
@@ -46,9 +47,13 @@ def generate_caption(image_path, api_key, trigger_word):
     request_count += 1  # Increment counter for each new attempt
     print(f"Request count: {request_count}/{daily_quota}")
     # Manual reset check after 2:00 AM CEST
-    current_time = datetime.datetime.now(pytz.timezone('Europe/Paris'))
-    if current_time.hour < 2 and request_count > 50:
-        request_count = 1  # Reset counter if past quota but before 2:00 AM next day
+    try:
+        current_time = datetime.now(pytz.timezone('Europe/Paris'))
+        if current_time.hour < 2 and request_count > 50:
+            request_count = 1  # Reset counter if past quota but before 2:00 AM next day
+    except NameError:
+        print("Warning: datetime or pytz not available, skipping reset check.")
+        pass  # Proceed without reset if imports fail
     quota_exceeded = False
     for attempt in range(max_retries + 1):
         try:
@@ -166,5 +171,6 @@ def index():
         except Exception as e:
             return jsonify({"error": str(e)})
     return render_template("index.html", error=None)
+
 if __name__ == "__main__":
     app.run(debug=True)
