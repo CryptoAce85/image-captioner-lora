@@ -1,4 +1,4 @@
-# Bulk Image Captioner for LoRA Training (NSFW Enabled) specialiced fot female LoRAs
+# Bulk Image Captioner for LoRA Training (NSFW Enabled & specialiced for female LoRAs)
 
 
   A Flask-based web app for generating image captions for LoRA training, using the Gemini-2.5-pro model. Users can input their Gemini API key and a custom trigger word via the web interface.
